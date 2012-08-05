@@ -3,8 +3,8 @@ When added to an update zip this should allow any HTC device with a custom recov
 Requirements:
 -The devices must have a working kernel and ramdisk that starts either /system/bin/app_process or /system/bin/netd.
 -Both /system and /data should be mounted for rw before using install_kernel.sh.
--install_kernel.sh is passed file names that must match the files referred to by the edify scripts
--The included files must be packaged in and extracted to an otherwise unused directory; the default is */kernel, but this can be changed in updater-script and install_kernel.sh.
+-install_kernel.sh is passed file names that must match the files used by the edify scripts
+-The included files must be packaged in and extracted to an otherwise unused directory; the default is /tmp/kernel/, but this can be changed in the updater-script.
 -The data partition must have enough free space to fit four copies of the boot partition. (approx. 32MB to 64MB)
 
 Included Files
