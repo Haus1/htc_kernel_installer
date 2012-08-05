@@ -1,0 +1,13 @@
+#The kernel folder, boot.img and temp file can all be moved by adjusting this
+
+ui_print("Installing Kernel, this may take awhile...");
+package_extract_file("boot.img", "/tmp/boot.img");
+package_extract_dir("kernel", "/tmp/kernel");
+set_perm_recursive(0, 2000, 0777, 0777, "/tmp/kernel");
+run_program("/tmp/kernel/install_kernel.sh", "/tmp/boot.img", "/tmp/bootready.tmp");;
+ifelse(file_getprop("/tmp/bootready.tmp","kernel.ready") != "READY",(
+	ifelse(file_getprop("/tmp/bootready.tmp","kernel.ready") == "STARTUP",
+		ui_print("Kernel Will Be Installed On Startup."),
+		ui_print("ERROR: Kernel Not Installed!")
+	)
+));
