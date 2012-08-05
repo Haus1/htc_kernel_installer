@@ -43,7 +43,7 @@ REBOOT(){
 }
 REBOOT2(){
 	case $(ls $1) in
-		$1)	PRINTLOG "Attempting to Reboot with "\$@\""
+		$1)	PRINTLOG "Attempting to Reboot with \"$@\""
 			sync; $@
 			case $? in
 				0)	PRINTLOG "Call to Reboot Successful"; sleep 8;;
