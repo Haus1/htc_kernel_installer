@@ -61,8 +61,8 @@ CLEANUP(){
 	echo "-Cleaning up temporary files"
 	rm -f $BOOTNEW
 	rm -rf $DIRWRK
-	if (! $MNTSYS &>/dev/null); then umount system; MNTSYS=""; fi
-	if (! $MNTDATA &>/dev/null); then umount data; MNTDATA=""; fi
+	if (! $MNTSYS &>/dev/null); then umount /system; MNTSYS=""; fi
+	if (! $MNTDATA &>/dev/null); then umount /data; MNTDATA=""; fi
 	exit ${1:-0}
 }
 MD5(){
@@ -95,13 +95,13 @@ echo "-Verifying System and Data partitions are mounted and that the mount point
 if ( ! mount | $BBGREP -q "p${BLOCKSYSTEM#*p}.*/system.*rw," ); then
 	echo "-System not mounted!"
 	MNTSYS="1"
-	mount system; wait
+	mount /system; wait
 	if ( ! mount | $BBGREP -q "p${BLOCKSYSTEM#*p}.*/system.*rw," ); then CLEANUP 71; fi
 fi
 if ( ! mount | $BBGREP -q "p${BLOCKDATA#*p}.*/data.*rw," ); then
 	echo "-Data not mounted!"
 	MNTDATA="1"
-	mount data; wait
+	mount /data; wait
 	if ( ! mount | $BBGREP -q "p${BLOCKDATA#*p}.*/data.*rw," ); then CLEANUP 72; fi
 fi
 
