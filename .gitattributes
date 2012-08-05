@@ -1,0 +1,8 @@
+#Let it normalize a few things
+Android.mk	text	eol=lf
+flashboot.sh	text	eol=lf
+flashbootd.c	text	eol=lf	diff=cpp
+install_kernel.sh	text	eol=lf
+README	text	eol=crlf
+NOTICE	text	eol=crlf
+busybox	binary
