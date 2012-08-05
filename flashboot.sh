@@ -14,7 +14,7 @@
 #   limitations under the License.
 
 #
-#  HTC Kernel Installer - v0.55
+#  HTC Kernel Installer - v0.56
 #   haus.xda@gmail.com
 #
 # 'if' is not always available so case is a more reliable alternative. If busybox is installed to xbin the temporary copy will be deleted before finishing,
@@ -74,14 +74,19 @@ BBMD5=$TMPBB" md5sum"
 
 
 #---Only the instance with the lowest PID should stay running
-local PIDS=$($BBPIDOF ${FLASHBOOT##*\/})
+PIDS=$($BBPIDOF ${FLASHBOOT##*\/})
 case ${PIDS##* } in
 	$$)	PRINTLOG "Looks like this is the one! Proceeding...";;
 	*)	PRINTLOG "Yielding to \"${PIDS##* }\""; exit 1;;
 esac
 
-#---Find mounting points for the Boot and System partitions, then remount /system as writable if needed
-BLOCKBOOT=/dev/block/$(cat /proc/emmc | $BBGREP '"boot"' | $BBAWK '-F:' '{ print $1; }')
+#---Find mounting the point for the Boot, then remount /system as writable if needed
+case $(ls "/proc/mtd") in
+	/proc/mtd)
+		EMMTD="/proc/mtd";;
+	*)	EMMTD="/proc/emmc";;
+esac
+BLOCKBOOT=/dev/block/$(cat $EMMTD | $BBGREP '"boot"' | $BBAWK '-F:' '{ print $1; }')
 sync; $BBMOUNT -o rw,remount /system
 
 #---Make sure the boot.img is where we expect it, if it's gone check to see if the padded copy is still available

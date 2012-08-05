@@ -14,7 +14,7 @@
 #   limitations under the License.
 
 #
-#  HTC Kernel Installer - v0.55
+#  HTC Kernel Installer - v0.56
 #   haus.xda@gmail.com
 #
 # Usage: ./compare.sh <boot.img> <results.tmp>
@@ -84,40 +84,41 @@ BBDD=$DIRWRK"busybox dd"
 BBMD5=$DIRWRK"busybox md5sum"
 BBOB=$DIRWRK"busybox ["
 BBDF=$DIRWRK"busybox df"
-BLOCKBOOT=/dev/block/$(cat /proc/emmc | $BBGREP '"boot"' | $BBAWK '-F:' '{ print $1; }')
-BLOCKSYSTEM=/dev/block/$(cat /proc/emmc | $BBGREP '"system"' | $BBAWK '-F:' '{ print $1; }')
-BLOCKDATA=/dev/block/$(cat /proc/emmc | $BBGREP '"userdata"' | $BBAWK '-F:' '{ print $1; }')
+if $BBOB -f "/proc/mtd" ]; then EMMTD="/proc/mtd"; else EMMTD="/proc/emmc"; fi
+BLOCKBOOT=/dev/block/$(cat $EMMTD | $BBGREP '"boot"' | $BBAWK '-F:' '{ print $1; }')
+BLOCKSYSTEM=/dev/block/$(cat $EMMTD | $BBGREP '"system"' | $BBAWK '-F:' '{ print $1; }'); BLOCKSYSTEM="p"${BLOCKSYSTEM#*p}
+BLOCKDATA=/dev/block/$(cat $EMMTD | $BBGREP '"userdata"' | $BBAWK '-F:' '{ print $1; }'); BLOCKDATA="p"${BLOCKDATA#*p}
 MD5FLASHBOOT=$(MD5 $DIRWRK"flashboot")
 
 if $BBOB ! -f "$BOOTNEW" ]; then CLEANUP 70; fi
 
 echo "-Verifying System and Data partitions are mounted and that the mount points were retrieved correctly"
-if ( ! mount | $BBGREP -q "p${BLOCKSYSTEM#*p}.*/system.*rw," ); then
+if ( ! mount | $BBGREP -q "${BLOCKSYSTEM#*\/}.*/system.*rw," ); then
 	echo "-System not mounted!"
 	MNTSYS="1"
 	mount /system; wait
-	if ( ! mount | $BBGREP -q "p${BLOCKSYSTEM#*p}.*/system.*rw," ); then CLEANUP 71; fi
+	if ( ! mount | $BBGREP -q "${BLOCKSYSTEM#*\/}.*/system.*rw," ); then CLEANUP 71; fi
 fi
-if ( ! mount | $BBGREP -q "p${BLOCKDATA#*p}.*/data.*rw," ); then
+if ( ! mount | $BBGREP -q "${BLOCKDATA#*\/}.*/data.*rw," ); then
 	echo "-Data not mounted!"
 	MNTDATA="1"
 	mount /data; wait
-	if ( ! mount | $BBGREP -q "p${BLOCKDATA#*p}.*/data.*rw," ); then CLEANUP 72; fi
+	if ( ! mount | $BBGREP -q "${BLOCKDATA#*\/}.*/data.*rw," ); then CLEANUP 72; fi
 fi
 
 echo "-Extracting the boot partition and padding the new one to match it's size"
-$BBDD if=$BLOCKBOOT of=$BOOTOLD conv=noerror
-BOOTSIZE=`$BBSTAT $BOOTOLD | $BBGREP "Size:" | $BBAWK '{ printf("%s\n",$2); }'`
-$BBDD if=$BOOTNEW ibs=$BOOTSIZE of=$BOOTPADDED conv=sync
+$BBDD if=$BLOCKBOOT of=$BOOTOLD conv=noerror; sync
+BOOTSIZE=`$BBSTAT $BOOTOLD | $BBGREP "Size:" | $BBAWK '{ printf("%s\n",$2); }'`; sync
+$BBDD if=$BOOTNEW ibs=$BOOTSIZE of=$BOOTPADDED conv=sync; sync
 if ( BOOTMATCHES $BOOTNEW ); then
 	echo "kernel.ready=READY" > $2
 	CLEANUP
 fi
 
 echo "-Trying to write the new boot.img and verify it's MD5"
-$BBDD if=$BOOTPADDED of=$BLOCKBOOT
+$BBDD if=$BOOTPADDED of=$BLOCKBOOT; sync
 rm -f $BOOTOLD
-$BBDD if=$BLOCKBOOT of=$BOOTOLD conv=noerror
+$BBDD if=$BLOCKBOOT of=$BOOTOLD conv=noerror; sync
 if ( BOOTMATCHES ); then
 	echo "kernel.ready=READY" > $2
 	CLEANUP
