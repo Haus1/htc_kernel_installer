@@ -18,7 +18,6 @@
 #   haus.xda@gmail.com
 #
 # 'if' is not always available so case is a more reliable alternative. If busybox is installed to xbin the temporary copy will be deleted before finishing,
-#  otherwise busybox will need to be left in /data/local so we can use it to reboot.
 #
 
 exec 1>>/data/local/bootinfo.txt 2>&1

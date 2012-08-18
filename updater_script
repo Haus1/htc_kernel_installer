@@ -1,6 +1,6 @@
 #The kernel folder, boot.img and temp file can all be moved by adjusting this
 
-ui_print("Installing Kernel, this may take awhile...");
+ui_print("Installing Kernel, please wait...");
 package_extract_file("boot.img", "/tmp/boot.img");
 package_extract_dir("kernel", "/tmp/kernel");
 set_perm_recursive(0, 2000, 0777, 0777, "/tmp/kernel");
