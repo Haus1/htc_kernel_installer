@@ -14,7 +14,7 @@
 #   limitations under the License.
 
 #
-#  HTC Kernel Installer - v0.56
+#  HTC Kernel Installer - v0.57
 #   haus.xda@gmail.com
 #
 # 'if' is not always available so case is a more reliable alternative.
@@ -85,7 +85,7 @@ case $(ls "/proc/mtd") in
 	*)	EMMTD="/proc/emmc";;
 esac
 BLOCKBOOT=/dev/block/$(cat $EMMTD | $BBGREP '"boot"' | $BBAWK '-F:' '{ print $1; }')
-PRINTLOG "Found Boot Partitions Mount Poinst at \""$BLOCKBOOT"\""
+PRINTLOG "Found Boot Partitions Mount Point at \""$BLOCKBOOT"\""
 sync; $BBMOUNT -o rw,remount /system
 
 #---Make sure the boot.img is where we expect it, if it's gone check to see if the padded copy is still available

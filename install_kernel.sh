@@ -14,7 +14,7 @@
 #   limitations under the License.
 
 #
-#  HTC Kernel Installer - v0.56
+#  HTC Kernel Installer - v0.57
 #   haus.xda@gmail.com
 #
 # Usage: ./compare.sh <boot.img> <results.tmp>
