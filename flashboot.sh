@@ -17,7 +17,7 @@
 #  HTC Kernel Installer - v0.56
 #   haus.xda@gmail.com
 #
-# 'if' is not always available so case is a more reliable alternative. If busybox is installed to xbin the temporary copy will be deleted before finishing,
+# 'if' is not always available so case is a more reliable alternative.
 #
 
 exec 1>>/data/local/bootinfo.txt 2>&1
@@ -28,7 +28,7 @@ PRINTLOG(){
 	echo $$" "$@
 }
 REBOOT(){
-	#---Depending on the ROM 'reboot' may not be reliable at this stage of booting or from a shell
+	#---Depending on the ROM 'reboot' may not be reliable
 	while :; do
 		REBOOT2 "/system/bin/reboot" " $@"
 		REBOOT2 $TMPBB " reboot -d 2 -f $@"
@@ -51,8 +51,7 @@ REBOOT2(){
 }
 
 
-echo $$" - "`date`" --------------"
-PRINTLOG ${0##*\/}" Starting..."
+echo $$" - "`date`" - "${0##*\/}" Starting --------------"
 
 TMPBB="/system/bin/busybox2"
 ROMBB="/system/xbin/busybox"
@@ -79,20 +78,21 @@ case ${PIDS##* } in
 	*)	PRINTLOG "Yielding to \"${PIDS##* }\""; exit 1;;
 esac
 
-#---Find mounting the point for the Boot, then remount /system as writable if needed
+#---Find the moint point for Boot and remount /system as writable
 case $(ls "/proc/mtd") in
 	/proc/mtd)
 		EMMTD="/proc/mtd";;
 	*)	EMMTD="/proc/emmc";;
 esac
 BLOCKBOOT=/dev/block/$(cat $EMMTD | $BBGREP '"boot"' | $BBAWK '-F:' '{ print $1; }')
+PRINTLOG "Found Boot Partitions Mount Poinst at \""$BLOCKBOOT"\""
 sync; $BBMOUNT -o rw,remount /system
 
 #---Make sure the boot.img is where we expect it, if it's gone check to see if the padded copy is still available
+$BBDD if=$BLOCKBOOT of=$BOOTOLD conv=noerror; sync
 case $(ls $BOOTNEW) in
 	$BOOTNEW)
 		PRINTLOG "Preparing to Write New Boot Image"
-		$BBDD if=$BLOCKBOOT of=$BOOTOLD conv=noerror; sync
 		SIZEBOOT=$($BBSTAT $BOOTOLD | $BBGREP "Size:" | $BBAWK '{ printf("%s\n",$2); }'); sync
 		$BBDD if=$BOOTNEW ibs=$SIZEBOOT of=$BOOTNEWPAD conv=sync; sync
 		rm $BOOTNEW;;
@@ -103,11 +103,11 @@ case $(ls $BOOTNEW) in
 		esac;;
 esac
 
-#---Flash the new boot.img and then verify it flashed correctly
+#---Flash the new boot.img and then compare MD5s to verify it
 $BBDD if=$BOOTNEWPAD of=$BLOCKBOOT; sync
 $BBDD if=$BLOCKBOOT of=$BOOTCURRENT conv=noerror; sync
 
-PRINTLOG "Verifying that the MD5 is still good"
+PRINTLOG "Verifying the Boot partitions MD5"
 MD5OLD=$($BBMD5 $BOOTOLD | $BBAWK '-F ' '{ print $1; }')
 MD5NEWPAD=$($BBMD5 $BOOTNEWPAD | $BBAWK '-F ' '{ print $1; }')
 MD5CURRENT=$($BBMD5 $BOOTCURRENT | $BBAWK '-F ' '{ print $1; }')
@@ -115,9 +115,8 @@ PRINTLOG "$MD5OLD  $BOOTOLD"
 PRINTLOG "$MD5NEWPAD  $BOOTNEWPAD"
 PRINTLOG "$MD5CURRENT  $BOOTCURRENT"
 
-#---Make sure the MD5 still matches
-case $MD5NEWPAD in
-	$MD5CURRENT)
+case $MD5CURRENT in
+	$MD5NEWPAD)
 		PRINTLOG "Verified Boot Flashed Properly";;
 	$MD5OLD)
 		PRINTLOG "Failed to Write to \"$BLOCKBOOT\"!"
